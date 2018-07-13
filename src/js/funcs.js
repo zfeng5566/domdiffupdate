@@ -49,7 +49,7 @@ function updateNode(oldNode, newNode) {
         //如果该元素是一个region 占位元素 则不更新该元素及后代元素
     } else if (oldNode.hasAttribute('region')) {
         return oldNode;
-        //如果值得比较 则开始对比
+        //如果值得比较 则开始对比    
     } else {
         //更新 id
         oldNode.id === newNode.id || (oldNode.id = newNode.id);
@@ -78,30 +78,32 @@ function updateNode(oldNode, newNode) {
             })
         }
         //更新 子元素
-        updateChildrens(oldNode.children, newNode.children);
+            updateChildrens(oldNode.children, newNode.children,oldNode);
     }
 
 }
 //更新子元素 暂时没有考虑list形式的数据更新。。。。
-function updateChildrens(oldNodeChildrens, newNodeChildrens) {
+function updateChildrens(oldNodeChildrens, newNodeChildrens,oldParentNode) {
     let oldStartIdx = 0,
         newStartIdx = 0;
     let oldLength = oldNodeChildrens.length;
     let newLength = newNodeChildrens.length;
     let oldStartNode = oldNodeChildrens[oldStartIdx];
     let newStartNode = newNodeChildrens[newStartIdx];
-    while (oldStartIdx < oldLength && newStartIdx < newLength) {
-        if (oldStartNode !== undefined && oldStartNode !== undefined) {
+    while (oldStartIdx < oldLength || newStartIdx < newLength) {
+        console.log(oldStartIdx,newStartIdx)
+        if (oldStartNode !== undefined && newStartNode !== undefined) {
             updateNode(oldStartNode, newStartNode);
             oldStartNode = oldNodeChildrens[++oldStartIdx];
             newStartNode = newNodeChildrens[++newStartIdx];
         } else if (oldStartNode) {
-            oldStartNode.parentElement.removeChild(oldStartNode);
+            oldParentNode.removeChild(oldStartNode);
             oldStartNode = oldNodeChildrens[oldStartIdx];
             --oldLength;
         } else if (newStartNode) {
-            oldStartNode.parentElement.appendChild(newStartNode);
+            oldParentNode.appendChild(newStartNode);
             newStartNode = newNodeChildrens[newStartIdx];
+            --newLength;
         }
     }
 }
