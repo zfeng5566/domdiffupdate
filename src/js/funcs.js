@@ -78,12 +78,82 @@ function updateNode(oldNode, newNode) {
             })
         }
         //更新 子元素
-            updateChildrens(oldNode.children, newNode.children,oldNode);
+        if(oldNode.children.length && newNode.children.length){
+            let result = isList(oldNode.children,newNode.children);
+            result
+            ? 
+            updateChildrenByList(oldNode.children,newNode.children,oldNode,result)
+            :
+            updateChildrens1(oldNode.children, newNode.children,oldNode);
+        }else if(oldNode.children.length){
+            while (oldNode.removeChild(oldNode.children[0])) {
+            }
+        }else if(newNode.children.length){
+            while (newNode.children.length) {
+                oldNode.appendChild(newNode.children[0])
+            }
+        }
     }
 
 }
+function isList(oldNodeChildrens) {
+    let oldJSON = {};
+    let newJSON = {};
+    let isList = true;
+    for (let i = 0; i < oldNodeChildrens.length; i++) {
+        if(!oldNodeChildrens[i].hasAttribute('key')){
+            isList = false;
+            break;
+        }else{
+            oldJSON[oldNodeChildrens[i].getAttribute('key')] = oldNodeChildrens[i];
+        }
+    };
+    if(!isList){
+        return false;
+    }else{
+        return oldJSON;
+    }
+}
+function updateChildrenByList(oldNodeChildrens, newNodeChildrens, oldParentNode,oldKeyJSON) {
+    let oldStartIdx = 0,
+        newStartIdx = 0;
+    let oldLength = oldNodeChildrens.length;
+    let newLength = newNodeChildrens.length;
+    let oldStartNode = oldNodeChildrens[oldStartIdx];
+    let newStartNode = newNodeChildrens[newStartIdx];
+    let indexNode;
+    while (oldStartIdx < oldLength || newStartIdx < newLength) {
+        console.log(oldStartIdx,oldLength,newStartIdx,newLength);
+        if (oldStartNode !== undefined && newStartNode !== undefined) {
+            if(isSameNode(oldStartNode,newStartNode)){
+                updateNode(oldStartNode,newStartNode);
+                oldStartNode = oldNodeChildrens[++oldStartIdx];
+                newStartNode = newNodeChildrens[++newStartIdx];
+            }else if(indexNode = oldKeyJSON[newStartNode.getAttribute('key')]){
+                updateNode(indexNode,newStartNode);
+                oldParentNode.insertBefore(indexNode,oldStartNode);
+                ++oldStartIdx;
+                newStartNode = newNodeChildrens[++newStartIdx];
+            }else{
+                oldParentNode.insertBefore(newStartNode,oldStartNode);
+                ++oldStartIdx;
+                ++oldLength;
+                newStartNode = newNodeChildrens[newStartIdx];
+                --newLength;
+            }
+        }else if(oldStartNode){
+            oldParentNode.removeChild(oldStartNode);
+            oldStartNode = oldNodeChildrens[oldStartIdx];
+            --oldLength;
+        }else if(newStartNode){
+            oldParentNode.appendChild(newStartNode);
+            newStartNode = newNodeChildrens[newStartIdx];
+            --newLength;
+        }
+    }
+}
 //更新子元素 暂时没有考虑list形式的数据更新。。。。
-function updateChildrens(oldNodeChildrens, newNodeChildrens,oldParentNode) {
+function updateChildrens(oldNodeChildrens, newNodeChildrens, oldParentNode) {
     let oldStartIdx = 0,
         newStartIdx = 0;
     let oldLength = oldNodeChildrens.length;
@@ -91,7 +161,7 @@ function updateChildrens(oldNodeChildrens, newNodeChildrens,oldParentNode) {
     let oldStartNode = oldNodeChildrens[oldStartIdx];
     let newStartNode = newNodeChildrens[newStartIdx];
     while (oldStartIdx < oldLength || newStartIdx < newLength) {
-        console.log(oldStartIdx,newStartIdx)
+        console.log(oldStartIdx, newStartIdx)
         if (oldStartNode !== undefined && newStartNode !== undefined) {
             updateNode(oldStartNode, newStartNode);
             oldStartNode = oldNodeChildrens[++oldStartIdx];
@@ -106,4 +176,12 @@ function updateChildrens(oldNodeChildrens, newNodeChildrens,oldParentNode) {
             --newLength;
         }
     }
+}
+//主要通过key判断是否是同一个元素
+function isSameNode(oldNode, newNode) {
+    return oldNode.getAttribute('key') !== undefined 
+    && 
+    newNode.getAttribute('key') !== undefined 
+    && 
+    oldNode.getAttribute('key') === newNode.getAttribute('key');
 }
