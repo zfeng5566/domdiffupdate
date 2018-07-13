@@ -42,6 +42,42 @@ function sameNode(oldNode, newNode) {
 //      textConttent
 //      children
 
+function updateNode(oldNode, newNode) {
+    if (!sameNode(oldNode, newNode)) {
+        oldNode.parentElement.replaceChild(newNode.cloneNode(true), oldNode);
+    } else {
+        //更新 id
+        oldNode.id === newNode.id || (oldNode.id = newNode.id);
+        //更新 className
+        oldNode.className === newNode.className || (oldNode.className = newNode.className);
+        //更新 textContent
+        if (!oldNode.children.length && !newNode.children.length && newNode.textContent !== oldNode.textContent) {
+            oldNode.textContent = newNode.textContent
+        }
+        //更新 attribute 属性
+        if (oldNode.attributes.length || newNode.attributes.length) {
+            let oldJSON = attributeToJSON(oldNode);
+            let newJSON = attributeToJSON(newNode);
+            _.each(oldJSON, function (value, key) {
+                if (newJSON[key] === value) {
+                    delete newNode[key]
+                } else if (!newJSON.hasOwnProperty(key)) {
+                    oldNode.removeAttribute(key);
+                } else {
+                    oldNode.setAttribute(key, newJSON[key])
+                    delete newJSON[key]
+                }
+            });
+            _.each(newJSON, function (value, key) {
+                oldNode.setAttribute(key, value);
+            })
+        };
+        //更新 子元素
+        updateChildrens(oldNode.children, newNode.children);
+    }
+
+};
+
 function updateChildrens(oldNodeChildrens, newNodeChildrens) {
     let oldStartIdx = 0,
         newStartIdx = 0;
