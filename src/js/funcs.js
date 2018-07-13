@@ -41,10 +41,15 @@ function sameNode(oldNode, newNode) {
 //      attribute
 //      textConttent
 //      children
-
 function updateNode(oldNode, newNode) {
+    //如不不值得对比 则直接替换
     if (!sameNode(oldNode, newNode)) {
         oldNode.parentElement.replaceChild(newNode.cloneNode(true), oldNode);
+
+        //如果该元素是一个region 占位元素 则不更新该元素及后代元素
+    } else if (oldNode.hasAttribute('region')) {
+        return oldNode;
+        //如果值得比较 则开始对比
     } else {
         //更新 id
         oldNode.id === newNode.id || (oldNode.id = newNode.id);
@@ -64,20 +69,20 @@ function updateNode(oldNode, newNode) {
                 } else if (!newJSON.hasOwnProperty(key)) {
                     oldNode.removeAttribute(key);
                 } else {
-                    oldNode.setAttribute(key, newJSON[key])
+                    oldNode.setAttribute(key, newJSON[key]);
                     delete newJSON[key]
                 }
             });
             _.each(newJSON, function (value, key) {
                 oldNode.setAttribute(key, value);
             })
-        };
+        }
         //更新 子元素
         updateChildrens(oldNode.children, newNode.children);
     }
 
-};
-
+}
+//更新子元素 暂时没有考虑list形式的数据更新。。。。
 function updateChildrens(oldNodeChildrens, newNodeChildrens) {
     let oldStartIdx = 0,
         newStartIdx = 0;
